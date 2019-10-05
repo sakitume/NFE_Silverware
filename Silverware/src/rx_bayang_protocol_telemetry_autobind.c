@@ -741,6 +741,7 @@ void checkrx(void)
 						  
 						  // And of course this means we'll be using a modified telemetry
 						  telemetry_enabled = 1;
+                          packet_period = PACKET_PERIOD_TELEMETRY;
 					  }
 #endif
 					  
