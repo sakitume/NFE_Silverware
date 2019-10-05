@@ -69,6 +69,17 @@ extern char aux_analogchange[AUXNUMBER];
 
 char lasttrim[4];
 
+#ifdef USE_SILVERLITE_BAYANG
+enum eSilverLiteStatus
+{
+	kSilverLiteUnavailable,
+	kSilverLiteAvailable	// SilverLite capable TX was detected during bind
+};
+// Note: This too should be saved with the rest of the auto-bind data
+// but only a boolean is needed (1 bit can be used) to indicate if it was kAvailable
+uint8_t silverLiteStatus = kSilverLiteUnavailable;
+#endif
+
 char rfchannel[4];
 char rxaddress[5];
 int telemetry_enabled = 0;
@@ -94,6 +105,12 @@ void writeregs(uint8_t data[], uint8_t size)
     spi_csoff();
 }
 
+
+//------------------------------------------------------------------------------
+// Forward declarations
+#ifdef USE_SILVERLITE_BAYANG
+static void sendSilverLiteTelemetry();
+#endif
 
 
 void rx_init()
@@ -311,6 +328,15 @@ extern float vbatt_comp;
 
 void send_telemetry()
 {
+#ifdef USE_SILVERLITE_BAYANG
+// Note: This too should be saved with the rest of the auto-bind data
+// but only a boolean is needed (1 bit can be used) to indicate if it was kAvailable
+	if (silverLiteStatus & kSilverLiteAvailable)
+	{
+		sendSilverLiteTelemetry();
+		return;
+	}
+#endif
 
     int txdata[15];
     for (int i = 0; i < 15; i++)
@@ -356,7 +382,137 @@ void send_telemetry()
     return;
 }
 
+#ifdef USE_SILVERLITE_BAYANG
+static uint8_t silverLitePIDTuningEnabled = 1;	// XXX, TODO: Use an AUX channel maybe? Or have this set/cleared via custom bit in decodepacket()
+static uint8_t silverLiteTelemetryCntr;
+static void sendSilverLiteTelemetry()
+{
+	// Even though we're sending bytes, they need to be provided
+	// via an integer array because that is what xn_writepayload() expects
+    int txdata[15];
+	
+	// Set first byte to indicate this is a SilverLite packet
+	// and not a normal telemetry packet (which uses 0x85, which is 133 decimal)
+	// We're reserving values 0xA0 thru 0xAF inclusive
+	// 0xA0 = normal telemetry
+	// 0xA1 = PIDs
+	
+	// For now we alternate between 0xA0 and 0xA1 even though PIDs
+	// never change unless we're manipulating it real-time. Very soon I'll
+	// 
+	++silverLiteTelemetryCntr;
+    txdata[0] = silverLitePIDTuningEnabled && (silverLiteTelemetryCntr & 1) ? 0xA1 : 0xA0;
+	
+	// 104 bits available for sending (13 bytes from 1 thru 13).
+	if (txdata[0] == 0xA1)
+	{
+		// Arrays are in roll, pitch, yaw order
+		// These values should always be in the range of 0.0 to 2.0
+		// based on my viewing of sample PID values in pid.c
+		// So we can normalize from that range to 0 to 2043 and
+		// use only 11 bits to save space
+		extern float pidkp[];
+		extern float pidki[];
+		extern float pidkd[];
+		
+		// STM32 is (of course) a 32 bit processor so we'll just use
+		// 'int' rather than an explicit type (such as uint16_t) so that
+		// which shifts bits over (8-bit) byte boundaries just works
+		// without us having to perform additional operations which could
+		// potentially confuse the C compiler from generating more optimal code
+		// I could review the generated code or even inline some assembly but
+		// I doubt any difference in gains/losses is worth it
+		//
+		// Note: I'm not treating our packet buffer as a bit stream. Instead I'm
+		// packing the lower 8 bits of each value first and accumulating the upper
+		// 3 bits of each value (27 bits in total) for storing afterwards
+		const int rP = (int)(pidkp[0] * 1000);
+		const int pP = (int)(pidkp[1] * 1000);
+		const int yP = (int)(pidkp[2] * 1000);
+		txdata[1] = rP & 0xFF;	// Masking with 0xFF is necessary because txdata[] is not a uint8_t array
+		txdata[2] = pP & 0XFF;
+		txdata[3] = yP & 0XFF;
+		unsigned bits = 
+			((rP & 0x700) >> 8) |
+			((pP & 0x700) >> 5) |
+			((yP & 0x700) >> 2);
+		
+		const int rI = (uint16_t)(pidki[0] * 1000);
+		const int pI = (uint16_t)(pidki[1] * 1000);
+		const int yI = (uint16_t)(pidki[2] * 1000);
+		txdata[4] = rI & 0xFF;
+		txdata[5] = pI & 0XFF;
+		txdata[6] = yI & 0XFF;
+		bits |= 
+			((rI & 0x700) << 1) |
+			((pI & 0x700) << 4) |
+			((yI & 0x700) << 7);
 
+		const int rD = (uint16_t)(pidkd[0] * 1000);
+		const int pD = (uint16_t)(pidkd[1] * 1000);
+		const int yD = (uint16_t)(pidkd[2] * 1000);
+		txdata[7] = rD & 0xFF;
+		txdata[8] = pD & 0XFF;
+		txdata[9] = yD & 0XFF;
+		bits |= 
+			((rD & 0x700) << 10) |
+			((pD & 0x700) << 13) |
+			((yD & 0x700) << 16);
+			
+		txdata[10] = (bits >> 0) & 0xFF;
+		txdata[11] = (bits >> 8) & 0xFF;
+		txdata[12] = (bits >> 16) & 0xFF;
+		txdata[13] = (bits >> 24) & 0x7;	// upper 5 bits should already be clear so mask is irrelevant
+	}
+	else
+	{
+		uint16_t pktsPerSec = packetpersecond < 1024 ? packetpersecond : 1023;
+		
+		// battery voltage filt and battery voltage comp
+		// Again, bits of each value are not contiguous
+		uint16_t vbattFilt = (uint16_t)(vbattfilt * 100);
+		uint16_t vbattComp = (uint16_t)(vbatt_comp * 100);
+		txdata[1] = (vbattFilt & 0xFF);
+		txdata[2] = (vbattComp & 0xFF);
+		txdata[3] = (pktsPerSec & 0xFF);
+		txdata[4] = 
+			((vbattFilt & 0x700) >> 8) |
+			((vbattComp & 0x700) >> 5) |
+			((pktsPerSec& 0x300) >> 2);
+		
+		// Flags
+		extern int onground;
+		txdata[5] =
+			(lowbatt ? 			(1 << 5) : 0) |
+			(onground ? 		(1 << 4) : 0) |
+			(aux[LEVELMODE] ? 	(1 << 3) : 0) |
+			(aux[RACEMODE] ? 	(1 << 2) : 0) |
+			(aux[HORIZON] ? 	(1 << 1) : 0) |
+			(aux[RATES] ? 		(1 << 0) : 0);
+			
+		for (int i=6; i<14; i++)
+		{
+			txdata[i] = 0;
+		}
+	}
+
+	// Set the checksum
+    int sum = txdata[0];
+    for (int i = 1; i < 14; i++)
+	{
+		sum += txdata[i];
+	}
+    txdata[14] = sum;
+
+	// Flush TX queue, set XN297 into transmit mode, then output the packet
+    xn_command(FLUSH_TX);
+    xn_writereg(0, XN_TO_TX);
+    xn_writepayload(txdata, 15);
+
+	// Update send_time so beacon_sequence() can check for timeout
+    send_time = gettime();
+}
+#endif
 
 static char checkpacket()
 {
@@ -575,6 +731,19 @@ void checkrx(void)
 											
                       rxmode = RX_MODE_NORMAL;
 											 
+					  
+#ifdef USE_SILVERLITE_BAYANG
+					  // Examine rxdata[10] and rxdata[11] to see if they have the
+					  // special magic bytes that indicate TX is SilverLite capable
+					  if (((rxdata[1] ^ 0xAA) == rxdata[10]) && ((rxdata[2] ^ 0xAA) == rxdata[11]))
+					  {
+						  silverLiteStatus = kSilverLiteAvailable;
+						  
+						  // And of course this means we'll be using a modified telemetry
+						  telemetry_enabled = 1;
+					  }
+#endif
+					  
 
 #ifdef SERIAL
                       printf(" BIND \n");
