@@ -1,0 +1,35 @@
+{
+    "configurations": [
+        {
+            "name": "STM32 Debug",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${env:VSARM}/armcc/arm-none-eabi/include/c++/8.3.1",
+                "${env:VSARM}/armcc/arm-none-eabi/include/c++/8.3.1/arm-none-eabi",
+                "${env:VSARM}/armcc/arm-none-eabi/include/c++/8.3.1/backward",
+                "${env:VSARM}/armcc/lib/gcc/arm-none-eabi/8.3.1/include",
+                "${env:VSARM}/armcc/lib/gcc/arm-none-eabi/8.3.1/include-fixed",
+                "${env:VSARM}/armcc/arm-none-eabi/include",
+
+                "${workspaceRoot}/Libraries/CMSIS/Device/ST/STM32F0xx/Include/",
+                "${workspaceRoot}/Libraries/CMSIS/Include/",
+                "${workspaceRoot}/Libraries/STM32F0xx_StdPeriph_Driver/inc/",
+                "${workspaceRoot}/Utilities/"
+            ],
+            "defines": [
+                "USE_STDPERIPH_DRIVER",
+                "STM32F031"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceRoot}",
+                    "${env:VSARM}/armcc"
+                ],
+                "limitSymbolsToIncludedHeaders": false,
+                "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 4
+}
