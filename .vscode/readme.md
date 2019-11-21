@@ -58,6 +58,13 @@ from here: <https://www.st.com/en/development-tools/stsw-link004.html>
 I'm pretty sure that's how I ended up getting the st-link drivers installed onto my Windows 10 development machine. I also ended up updating
 the firmware on my ST-Link V2 probe using that utility but I'm not sure if that was necessary. I'm noting it here in case it may be useful.
 
+I made an adapter to plug into the B03 FC board. I'm writing these notes down so I can remember the wiring.
+
+* Grey - SWCLK
+* Purple - SWDIO
+* Blue - Ground
+
+
 ## VSCode
 Hit F1 key and enter "select default" and choose the "Terminal: Select Default Shell". Then choose "Command Prompt C:\WINDOWS\System32\cmd.exe".
 
