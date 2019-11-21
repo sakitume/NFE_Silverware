@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Make Clean",
+            "label": "Make Clean (GCC)",
             "type": "shell",
             "command": "make clean",
             "windows": {
@@ -20,7 +20,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Make Firmware",
+            "label": "Make Firmware (GCC)",
             "type": "shell",
             "command": "make -j8 all",
             "windows": {
@@ -28,6 +28,38 @@
             },
             "options": {
                 "cwd": "${workspaceRoot}/gcc"
+            }, 
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Make Firmware (ARMCC)",
+            "type": "shell",
+            "command": "make",
+            "windows": {
+                "command": "mingw32-make",
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
+            }, 
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Make Clean (ARMCC)",
+            "type": "shell",
+            "command": "make clean",
+            "windows": {
+                "command": "mingw32-make clean",
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
             }, 
             "group": {
                 "kind": "build",
