@@ -69,19 +69,10 @@ extern char rxaddress[5];
 extern int telemetry_enabled;
 extern int rx_bind_enable;
     
-#ifdef USE_SILVERLITE_BAYANG
-extern uint8_t silverLiteStatus;	// Will be non-zero if silverLite is *expected*
-#endif
-	
  // save radio bind info  
     if ( rx_bind_enable )
     {
-#ifdef USE_SILVERLITE_BAYANG
-	// Set bit 10 if silverLite is expected
-	writeword(50, rxaddress[4]|telemetry_enabled<<8 | (silverLiteStatus ? (1 << 9) : 0));
-#else		
     writeword(50, rxaddress[4]|telemetry_enabled<<8);
-#endif		
     writeword(51, rxaddress[0]|(rxaddress[1]<<8)|(rxaddress[2]<<16)|(rxaddress[3]<<24));
     writeword(52, rfchannel[0]|(rfchannel[1]<<8)|(rfchannel[2]<<16)|(rfchannel[3]<<24));
     }
@@ -180,10 +171,6 @@ extern int telemetry_enabled;
 extern int rx_bind_load;
 extern int rx_bind_enable;
      
-#ifdef USE_SILVERLITE_BAYANG
-extern uint8_t silverLiteStatus;	// Will be non-zero if silverLite is *expected*
-#endif
-	 
  // save radio bind info   
 
     int temp = fmc_read(52);
@@ -201,15 +188,7 @@ extern uint8_t silverLiteStatus;	// Will be non-zero if silverLite is *expected*
         rx_bind_load = rx_bind_enable = 1; 
         
         rxaddress[4] = fmc_read(50);
-		
-#ifdef USE_SILVERLITE_BAYANG
-		unsigned long temp = fmc_read(50);
-		silverLiteStatus = (temp >> 9) != 0;
-		// Telemetry should always be enabled if SilverLite is enabled
-        telemetry_enabled = silverLiteStatus || (temp >> 8) != 0;
-#else		
         telemetry_enabled = fmc_read(50)>>8;
-#endif		
         temp = fmc_read(51);
         for ( int i = 0 ; i < 4; i++)
         {
