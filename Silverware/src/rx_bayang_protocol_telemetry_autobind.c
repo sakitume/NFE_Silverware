@@ -73,7 +73,7 @@ char lasttrim[4];
 enum eSilverLiteStatus
 {
 	kSilverLiteUnavailable,
-	kSilverLiteAvailable	// SilverLite capable TX was detected during bind
+	kSilverLiteAvailable	// SilverLite capable TX was detected
 };
 // Note: This too should be saved with the rest of the auto-bind data
 // but only a boolean is needed (1 bit can be used) to indicate if it was kAvailable
@@ -109,7 +109,7 @@ void writeregs(uint8_t data[], uint8_t size)
 //------------------------------------------------------------------------------
 // Forward declarations
 #ifdef USE_SILVERLITE_BAYANG
-static void sendSilverLiteTelemetry();
+static void sendSilverLiteTelemetry(void);
 #endif
 
 
@@ -385,7 +385,7 @@ void send_telemetry()
 #ifdef USE_SILVERLITE_BAYANG
 static uint8_t silverLitePIDTuningEnabled = 1;	// XXX, TODO: Use an AUX channel maybe? Or have this set/cleared via custom bit in decodepacket()
 static uint8_t silverLiteTelemetryCntr;
-static void sendSilverLiteTelemetry()
+static void sendSilverLiteTelemetry(void)
 {
 	// Even though we're sending bytes, they need to be provided
 	// via an integer array because that is what xn_writepayload() expects
@@ -624,6 +624,20 @@ static int decodepacket(void)
                   lastaux_analog[i] = aux_analog[i];
                 }
 #endif
+
+#ifdef USE_SILVERLITE_BAYANG
+                // If auto-bound to TX, we never processed a bind packet which means
+                // we don't know if the TX is SilverLite capable or not. However a
+                // SilverLite TX will set rxdata[12] differently than any other TX.
+                if (silverLiteStatus == 0)
+                {
+                    if ((rxaddress[2] ^ 0xAA) == rxdata[12])
+                    {
+                        silverLiteStatus |= kSilverLiteAvailable;
+                    }
+                }
+#endif
+
 
 							if (aux[LEVELMODE]){
 								if (aux[RACEMODE] && !aux[HORIZON]){

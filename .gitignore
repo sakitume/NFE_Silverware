@@ -56,6 +56,7 @@ Temporary Items
 # Build artifacts
 /gcc/bwhoop
 /gcc/bwhoop.elf
+/obj/
 
 # Unimportant files in .vscode folder
 /.vscode/.cortex-debug.*
