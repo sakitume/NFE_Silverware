@@ -70,14 +70,7 @@ extern char aux_analogchange[AUXNUMBER];
 char lasttrim[4];
 
 #ifdef USE_SILVERLITE_BAYANG
-enum eSilverLiteStatus
-{
-	kSilverLiteUnavailable,
-	kSilverLiteAvailable	// SilverLite capable TX was detected
-};
-// Note: This too should be saved with the rest of the auto-bind data
-// but only a boolean is needed (1 bit can be used) to indicate if it was kAvailable
-uint8_t silverLiteStatus = kSilverLiteUnavailable;
+static uint8_t silverLiteCapable = 0;
 #endif
 
 char rfchannel[4];
@@ -329,9 +322,7 @@ extern float vbatt_comp;
 void send_telemetry()
 {
 #ifdef USE_SILVERLITE_BAYANG
-// Note: This too should be saved with the rest of the auto-bind data
-// but only a boolean is needed (1 bit can be used) to indicate if it was kAvailable
-	if (silverLiteStatus & kSilverLiteAvailable)
+	if (silverLiteCapable)
 	{
 		sendSilverLiteTelemetry();
 		return;
@@ -629,11 +620,13 @@ static int decodepacket(void)
                 // If auto-bound to TX, we never processed a bind packet which means
                 // we don't know if the TX is SilverLite capable or not. However a
                 // SilverLite TX will set rxdata[12] differently than any other TX.
-                if (silverLiteStatus == 0)
+                if (silverLiteCapable == 0)
                 {
                     if ((rxaddress[2] ^ 0xAA) == rxdata[12])
                     {
-                        silverLiteStatus |= kSilverLiteAvailable;
+                         silverLiteCapable = 1;
+                        telemetry_enabled  = 1;
+                        packet_period = PACKET_PERIOD_TELEMETRY;
                     }
                 }
 #endif
@@ -751,9 +744,7 @@ void checkrx(void)
 					  // special magic bytes that indicate TX is SilverLite capable
 					  if (((rxdata[1] ^ 0xAA) == rxdata[10]) && ((rxdata[2] ^ 0xAA) == rxdata[11]))
 					  {
-						  silverLiteStatus = kSilverLiteAvailable;
-						  
-						  // And of course this means we'll be using a modified telemetry
+						  silverLiteCapable = 1;
 						  telemetry_enabled = 1;
                           packet_period = PACKET_PERIOD_TELEMETRY;
 					  }
