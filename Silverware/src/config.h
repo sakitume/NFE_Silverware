@@ -85,12 +85,12 @@
 //#define RX_BAYANG_PROTOCOL_TELEMETRY_AUTOBIND
 //#define RX_BAYANG_PROTOCOL_BLE_BEACON
 #define RX_BAYANG_PROTOCOL_TELEMETRY_AUTOBIND
+#define USE_SILVERLITE_BAYANG
 
 // *************Transmitter Type Selection
 //#define USE_STOCK_TX
 //#define USE_DEVO
 //#define USE_MULTI
-
 // MDM, examine "defines.h" for USE_DEVO and you'll see it says
 // it is also used for nr24multipro which is what the iRX6 seems to be
 #define USE_DEVO
