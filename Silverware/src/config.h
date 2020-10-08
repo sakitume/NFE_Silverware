@@ -17,7 +17,9 @@
 //#define Alienwhoop_ZERO  
 
 
-
+// Enable following definition if you want pids, filters, and other settings configured for
+// a Boss 7 style whoop. See comments in pid.c for more info.
+//#define USE_BOSS_7
 
 //**********************************************************************************************************************
 //***********************************************RATES & EXPO SETTINGS**************************************************
@@ -221,13 +223,22 @@
 #define KALMAN_GYRO
 //#define PT1_GYRO
 
-//Select Gyro Filter Cut Frequency
-#define GYRO_FILTER_PASS1 HZ_90
-#define GYRO_FILTER_PASS2 HZ_90
+#ifdef USE_BOSS_7
+	#define GYRO_FILTER_PASS1 HZ_70
+	#define GYRO_FILTER_PASS2 HZ_70
+#else
+	//Select Gyro Filter Cut Frequency
+	#define GYRO_FILTER_PASS1 HZ_90
+	#define GYRO_FILTER_PASS2 HZ_90
+#endif	
 
-//Select D Term Filter Cut Frequency *** Select Only one
-#define  DTERM_LPF_2ND_HZ 100
-//#define DTERM_LPF_1ST_HZ 70
+#ifdef USE_BOSS_7
+	#define  DTERM_LPF_2ND_HZ 120
+#else
+	//Select D Term Filter Cut Frequency *** Select Only one
+	#define  DTERM_LPF_2ND_HZ 100
+	//#define DTERM_LPF_1ST_HZ 70
+#endif	
 
 //Select Motor Filter Type  (I am no longer using this)
 //#define MOTOR_FILTER2_ALPHA MFILT1_HZ_90
@@ -261,9 +272,16 @@
 // *************retune it back up to where it feels good.  I'm finding about 60 to 65% of my previous D value seems to work.
 //#define TORQUE_BOOST 1.0
 
+#ifdef USE_BOSS_7
+	#define TORQUE_BOOST 1.0
+#endif
+
+
 // *************makes throttle feel more poppy - can intensify small throttle imbalances visible in FPV if factor is set too high
-//#define THROTTLE_TRANSIENT_COMPENSATION 
-//#define THROTTLE_TRANSIENT_COMPENSATION_FACTOR 4.0 
+#ifdef USE_BOSS_7
+	#define THROTTLE_TRANSIENT_COMPENSATION 
+	#define THROTTLE_TRANSIENT_COMPENSATION_FACTOR 4.0 
+#endif	
  
 // *************throttle angle compensation in level mode
 //#define AUTO_THROTTLE
