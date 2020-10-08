@@ -130,7 +130,7 @@
 //#define BUZZER_ENABLE CHAN_OFF
 
 // *************start in level mode for toy tx.  Must comment out STICK_TRAVEL_CHECK to assign CH_AUX1 to an aux feature
-//#define AUX1_START_ON
+#define AUX1_START_ON
 
 // *************automatically remove center bias in toy tx ( needs throttle off for 1 second )
 //#define STOCK_TX_AUTOCENTER
