@@ -10,11 +10,11 @@
 // *************uncomment BWHOOP define for bwhoop, bwhoop pro, E011C Santa Edition, and Beta FPV Lite Flight Controllers
 // *************uncomment E011 define for E011 flight Controller
 // *************uncomment H8mini_blue_board for the H8 mini flight controller with blue circuit board
-//#define BWHOOP
+#define BWHOOP
 //#define E011
 //#define H8mini_blue_board
 //#define Silverlite_Brushless
-#define Alienwhoop_ZERO  
+//#define Alienwhoop_ZERO  
 
 
 
@@ -75,7 +75,7 @@
 
 // *************Radio protocol selection
 // *************select only one
-#define RX_SBUS
+//#define RX_SBUS
 //#define RX_CRSF                                           //Requires tbs firmware v2.88 or newer for failsafe to operate properly
 //#define RX_DSMX_2048
 //#define RX_DSM2_1024
@@ -83,11 +83,17 @@
 //#define RX_NRF24_BAYANG_TELEMETRY
 //#define RX_BAYANG_BLE_APP
 //#define RX_BAYANG_PROTOCOL_TELEMETRY_AUTOBIND
+//#define RX_BAYANG_PROTOCOL_BLE_BEACON
+#define RX_BAYANG_PROTOCOL_TELEMETRY_AUTOBIND
 
 // *************Transmitter Type Selection
 //#define USE_STOCK_TX
 //#define USE_DEVO
-#define USE_MULTI
+//#define USE_MULTI
+
+// MDM, examine "defines.h" for USE_DEVO and you'll see it says
+// it is also used for nr24multipro which is what the iRX6 seems to be
+#define USE_DEVO
 
 // *******************************SWITCH SELECTION*****************************
 // *************CHAN_ON - on always ( all protocols)
@@ -104,13 +110,14 @@
 //*************channel is on, or racemodeHORIZON if both channels are on - and will be standard LEVELMODE if neither 
 //*************racemode or horizon are switched on.
 #define ARMING CHAN_5
-#define IDLE_UP CHAN_5
+#define IDLE_UP CHAN_9
 #define LEVELMODE CHAN_6
 #define RACEMODE  CHAN_7
 #define HORIZON   CHAN_8
-#define PIDPROFILE CHAN_9                //For switching stickAccelerator & stickTransition profiles on pid.c page
-#define RATES CHAN_ON
-#define LEDS_ON CHAN_10
+#define PIDPROFILE CHAN_OFF              //For switching stickAccelerator & stickTransition profiles on pid.c page
+#define RATES CH_AUX1
+#define LEDS_ON CHAN_OFF	// Yes! CHAN_OFF will turn on the LEDs
+
 
 // *************switch for fpv / other, requires fet
 // *************comment out to disable
@@ -236,7 +243,7 @@
 #define MOTOR_MIN_COMMAND  5.0
 
 // *************invert yaw pid for "PROPS OUT" configuration - This feature is switchable to "PROPS IN" when active with stick gesture DOWN-UP-DOWN, Save selection with DOWN-DOWN-DOWN
-#define INVERT_YAW_PID
+//#define INVERT_YAW_PID
 
 // *************pwm frequency for motor control
 // *************a higher frequency makes the motors more linear
@@ -308,7 +315,7 @@
 // *************This define will allow you to check if your radio is reaching 100% throws entering <RIGHT-RIGHT-DOWN> gesture
 // ************* will disable throttle and will rapid blink the led when sticks are moved to 100% throws
 // *************entering <LEFT-LEFT-DOWN> will return the quad to normal operation.
-#define STICK_TRAVEL_CHECK
+//#define STICK_TRAVEL_CHECK
 
 // *************ANALOG AUX CHANNELS
 // *************For some protocols, use Tx channels as auxiliary analog values
