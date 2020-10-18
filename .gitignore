@@ -54,9 +54,12 @@ Temporary Items
 .apdisk
 
 # Build artifacts
-/gcc/bwhoop
-/gcc/bwhoop.elf
+/gcc/*.elf
+/gcc/*.bin
+/gcc/*.hex
 /obj/
+/*.axf
+/*.hex
 
 # Unimportant files in .vscode folder
 /.vscode/.cortex-debug.*
