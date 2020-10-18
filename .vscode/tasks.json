@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Make Clean (GCC)",
+            "label": "GCC: clean",
             "type": "shell",
             "command": "make clean",
             "windows": {
@@ -20,11 +20,11 @@
             "problemMatcher": []
         },
         {
-            "label": "Make Firmware (GCC)",
+            "label": "GCC: make",
             "type": "shell",
             "command": "make -j8 all",
             "windows": {
-                "command": "mingw32-make -j8 all",
+                "command": "mingw32-make -j12 all",
             },
             "options": {
                 "cwd": "${workspaceRoot}/gcc"
@@ -36,15 +36,15 @@
             "problemMatcher": []
         },
         {
-            "label": "Make Firmware (ARMCC)",
+            "label": "GCC: make and flash",
             "type": "shell",
-            "command": "make",
+            "command": "make flash",
             "windows": {
-                "command": "mingw32-make -j8",
+                "command": "mingw32-make -j12 flash",
             },
             "options": {
-                "cwd": "${workspaceRoot}"
-            }, 
+                "cwd": "${workspaceRoot}/gcc"
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -52,7 +52,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Make Clean (ARMCC)",
+            "label": "ARMCC: clean",
             "type": "shell",
             "command": "make clean",
             "windows": {
@@ -68,12 +68,15 @@
             "problemMatcher": []
         },
         {
-            "label": "Load Firmware (OpenOCD)",
+            "label": "ARMCC: make",
             "type": "shell",
-            "command": "openocd -f ./openocd/scripts/interface/stlink.cfg -f ./openocd/scripts/target/stm32f0x.cfg -c init -c \"reset halt\" -c \"flash write_image erase ./gcc/bwhoop 0x08000000\" -c \"verify_image ./gcc/bwhoop 0x08000000\" -c \"reset run\" -c shutdown",
+            "command": "make",
+            "windows": {
+                "command": "mingw32-make -j12",
+            },
             "options": {
                 "cwd": "${workspaceRoot}"
-            },
+            }, 
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -81,11 +84,14 @@
             "problemMatcher": []
         },
         {
-            "label": "Load Firmware (ST-FLASH)",
+            "label": "ARMCC: make and flash",
             "type": "shell",
-            "command": "st-flash write ./bwhoop.bin 0x08000000",
+            "command": "make flash",
+            "windows": {
+                "command": "mingw32-make -j12 flash",
+            },
             "options": {
-                "cwd": "${workspaceRoot}/gcc"
+                "cwd": "${workspaceRoot}"
             },
             "group": {
                 "kind": "build",
