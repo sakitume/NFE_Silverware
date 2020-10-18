@@ -60,4 +60,7 @@ silverware.axf: $(OBJS)
 clean:
 	rm -Rf $(ODIR) silverware.axf silverware.hex
 
+flash: silverware.hex
+	openocd -f ./openocd/scripts/interface/stlink.cfg -f ./openocd/scripts/target/stm32f0x.cfg -c init -c "reset halt" -c "flash write_image erase silverware.hex" -c "verify_image silverware.hex" -c "reset run" -c shutdown
+
 -include $(OBJS:.o=.dep)

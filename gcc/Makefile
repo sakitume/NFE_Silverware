@@ -1,5 +1,5 @@
-TARGET=bwhoop
-EXECUTABLE=bwhoop.elf
+TARGET=silverware
+EXECUTABLE=silverware.elf
 
 CC=arm-none-eabi-gcc
 LD=arm-none-eabi-gcc
@@ -41,11 +41,11 @@ OBJ += $(patsubst %.cpp,$(OBJDIR)/%.o,$(filter %.cpp,$(SRC)))
 OBJ += Startup.o
 
 
-all: $(TARGET)
+all: $(TARGET).bin
 
 $(TARGET).hex: $(EXECUTABLE)
 	$(CP) -O ihex $^ $@
-$(TARGET): $(EXECUTABLE)
+$(TARGET).bin: $(EXECUTABLE)
 	$(CP) -O binary $^ $@
 
 $(EXECUTABLE): $(STARTUP) $(SRC)
@@ -54,6 +54,9 @@ $(EXECUTABLE): $(STARTUP) $(SRC)
 
 
 clean:
-	rm -f Startup.lst $(TARGET) $(TARGET).lst $(OBJ) $(AUTOGEN) \
+	rm -f Startup.lst $(TARGET).bin $(TARGET).lst $(OBJ) $(AUTOGEN) \
 		$(TARGET).out $(TARGET).hex  $(TARGET).map \
 		$(TARGET).dmp $(EXECUTABLE)
+
+flash: $(TARGET).bin
+	openocd -f ../openocd/scripts/interface/stlink.cfg -f ../openocd/scripts/target/stm32f0x.cfg -c init -c "reset halt" -c "flash write_image erase $(TARGET).bin 0x08000000" -c "verify_image $(TARGET).bin 0x08000000" -c "reset run" -c shutdown
